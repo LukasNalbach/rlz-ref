@@ -231,7 +231,7 @@ public:
 
     // ############################# MISC METHODS #############################
 
-    // returns the size in bytes of R, the phrase starts, SR, LP and PT
+    // returns the size of the data structure in bytes
     uint64_t size_in_bytes() const
     {
         return _reference.size_in_bytes() + _phrase_starts.size_in_bytes() + _SR.size_in_bytes()

@@ -226,7 +226,7 @@ template <array_kind_t kind>
 template <typename value_func_t, typename intervals_t>
 void rlz<kind>::construction<value_func_t, intervals_t>::tune_reference()
 {
-    log_phase_start(log, time, "tuning the RLZ reference\n");
+    log_phase_start(log, time, "tuning R\n");
 
     // the sample: windows of SA^d at random positions (about n / 100 values in total, at least 1024 and at
     // most 2^22); each window is read and parsed from one window length before its start
@@ -432,7 +432,7 @@ template <array_kind_t kind>
 template <typename value_func_t, typename intervals_t>
 void rlz<kind>::construction<value_func_t, intervals_t>::revise_reference()
 {
-    log_phase_start(log, time, "revising the RLZ reference by parses of a sample\n");
+    log_phase_start(log, time, "revising R on a sample\n");
 
     rlz_reference_segments ref_segments;
     ref_segments.segments = std::move(reference_segments);
@@ -465,17 +465,17 @@ void rlz<kind>::construction<value_func_t, intervals_t>::build_reference()
         .num_candidates = num_candidates,
         .num_threads = p });
 
-    log_phase_start(log, time, "choosing the RLZ reference segments");
+    log_phase_start(log, time, "choosing the segments of R");
     choice.choose_segments();
     finish_phase("time_choose_rlz_reference_segments");
     log_message(log, "number of segments: " + format_number(choice.num_segments()) + "\n");
 
-    log_phase_start(log, time, "closing gaps between the RLZ reference segments");
+    log_phase_start(log, time, "closing the gaps between the segments");
     choice.close_gaps();
     finish_phase("time_close_rlz_reference_gaps");
     log_message(log, "number of segments: " + format_number(choice.num_segments()) + "\n");
 
-    log_phase_start(log, time, "building the RLZ reference");
+    log_phase_start(log, time, "building R");
 
     value_frequency.clear();
     value_frequency.shrink_to_fit();
@@ -485,7 +485,7 @@ void rlz<kind>::construction<value_func_t, intervals_t>::build_reference()
     reference_length = reference.size();
 
     finish_phase("time_build_rlz_reference");
-    log_phase_start(log, time, "ranking the values of the RLZ reference");
+    log_phase_start(log, time, "ranking the values of R");
 
     // the suffix array is built from the ranks (see build_reference_index); R can be stored to disk before
     matcher.rank_values([&](uint64_t i) { return uint64_t(reference[i]); }, reference_length, p);
@@ -497,7 +497,7 @@ template <array_kind_t kind>
 template <typename value_func_t, typename intervals_t>
 void rlz<kind>::construction<value_func_t, intervals_t>::store_reference()
 {
-    log_phase_start(log, time, "storing the RLZ reference to disk");
+    log_phase_start(log, time, "spilling R");
 
     direct_ofstream tmp_file(prefix_tmp_files + "_R");
     reference.serialize(tmp_file);
@@ -513,7 +513,7 @@ template <array_kind_t kind>
 template <typename value_func_t, typename intervals_t>
 void rlz<kind>::construction<value_func_t, intervals_t>::build_reference_index()
 {
-    log_phase_start(log, time, "building the suffix array of the RLZ reference");
+    log_phase_start(log, time, "building SA of R");
     matcher.build_over_ranks(p);
     finish_phase("time_build_rlz_reference_index");
     if (log) log_peak_mem_usage();
@@ -523,7 +523,7 @@ template <array_kind_t kind>
 template <typename value_func_t, typename intervals_t>
 void rlz<kind>::construction<value_func_t, intervals_t>::load_reference()
 {
-    log_phase_start(log, time, "loading the RLZ reference from disk");
+    log_phase_start(log, time, "reading R");
 
     direct_ifstream tmp_file(prefix_tmp_files + "_R");
     reference.load(tmp_file);
@@ -686,7 +686,7 @@ void rlz<kind>::construction<value_func_t, intervals_t>::build_parsing()
         finish_phase("time_build_rlz_first_factorization");
         log_message(log, revision_log_msg + "\n");
         revision_log_msg.clear();
-        log_phase_start(log, time, "revising the RLZ reference by the parse");
+        log_phase_start(log, time, "revising R");
 
         if constexpr (space == _on_disk) {
             CPL_files.clear();
