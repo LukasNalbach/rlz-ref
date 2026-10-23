@@ -80,7 +80,7 @@ template <array_kind_t kind>
 template <typename value_func_t, typename intervals_t>
 void rlz<kind>::construction<value_func_t, intervals_t>::build_value_frequencies()
 {
-    log_message(log, "\nbuilding the RLZ encoding:\n");
+    log_message(log, "building the RLZ encoding:\n");
     log_phase_start(log, time, "computing value frequencies");
 
     value_frequency.reserve(r);
@@ -497,7 +497,7 @@ template <array_kind_t kind>
 template <typename value_func_t, typename intervals_t>
 void rlz<kind>::construction<value_func_t, intervals_t>::store_reference()
 {
-    log_phase_start(log, time, "spilling R");
+    log_phase_start(log, time, "storing R");
 
     direct_ofstream tmp_file(prefix_tmp_files + "_R");
     reference.serialize(tmp_file);
@@ -528,7 +528,6 @@ void rlz<kind>::construction<value_func_t, intervals_t>::load_reference()
     direct_ifstream tmp_file(prefix_tmp_files + "_R");
     reference.load(tmp_file);
     tmp_file.close();
-    log_spilled_size(log, prefix_tmp_files + "_R");
     std::filesystem::remove(prefix_tmp_files + "_R");
 
     finish_phase("time_load_rlz_reference");
