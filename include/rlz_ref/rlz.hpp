@@ -141,13 +141,6 @@ protected:
         bounds.beg = _phrase_starts.select_1(bounds.phrase + 1);
     }
 
-    // returns the size in bytes of R, the phrase starts, SR, LP and PT
-    uint64_t components_size_in_bytes() const
-    {
-        return _reference.size_in_bytes() + _phrase_starts.size_in_bytes() + _SR.size_in_bytes()
-            + _LP.size_in_bytes() + _PT.size_in_bytes();
-    }
-
 public:
     // ############################# CONSTRUCTORS #############################
 
@@ -238,6 +231,13 @@ public:
 
     // ############################# MISC METHODS #############################
 
+    // returns the size in bytes of R, the phrase starts, SR, LP and PT
+    uint64_t size_in_bytes() const
+    {
+        return _reference.size_in_bytes() + _phrase_starts.size_in_bytes() + _SR.size_in_bytes()
+            + _LP.size_in_bytes() + _PT.size_in_bytes();
+    }
+
     /**
      * @brief logs the data structure sizes to the output stream out
      * @param out an output stream
@@ -324,9 +324,6 @@ public:
     using rlz_phrases<reference_t>::rlz_phrases;
 
     // ############################# MISC METHODS #############################
-
-    // returns the size of the data structure in bytes
-    uint64_t size_in_bytes() const { return sizeof(*this) + components_size_in_bytes(); }
 
     // logs the contents of the rlz (only useful for small inputs)
     void log_data_structures() const;
