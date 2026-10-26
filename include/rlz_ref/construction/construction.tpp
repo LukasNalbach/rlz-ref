@@ -214,11 +214,10 @@ void rlz<kind>::construction<value_func_t, intervals_t>::estimate_size(tried_t& 
     tried.estimate.bytes = estimate_bytes(n, tried.length(), uint64_t(z * scale), uint64_t(z_l * scale));
 
     if (log) {
-        std::cout << "  tuning: s = " << format_number(tried.target_length) << " ("
-                  << format_ratio(tried.length() / double(r)) << " r)" << std::endl;
-        std::cout << "    |R| = " << format_number(tried.length()) << std::endl;
-        std::cout << "    ~z = " << format_number(uint64_t(z * scale)) << std::endl;
-        std::cout << "    ~size = " << format_size(uint64_t(tried.estimate.bytes)) << std::endl;
+        log_out() << "  tuning: s = " << format_number(tried.target_length) << " ("
+                  << format_ratio(tried.length() / double(r)) << " r), |R| = " << format_number(tried.length())
+                  << ", ~z = " << format_number(uint64_t(z * scale)) << ", ~size = "
+                  << format_size(uint64_t(tried.estimate.bytes)) << std::endl;
     }
 }
 
@@ -316,9 +315,15 @@ void rlz<kind>::construction<value_func_t, intervals_t>::parse_range(uint64_t th
     // lookahead[0..num_lookahead-1] stores the values SA^d[i..i+num_lookahead-1] that have been read; each
     // value of SA^d is read once, in ascending order of its position
     uint64_t num_lookahead = 0;
+    uint64_t counted = beg; // the positions [beg, counted) are counted by prog
+    const uint64_t grain = prog != nullptr ? prog->grain() : end - beg; // prog counts at least grain positions at once
 
     for (uint64_t i = beg + 1; i < end;) {
-        if (prog != nullptr) prog->at(i);
+        if (i - counted >= grain) [[unlikely]] {
+            if (prog != nullptr) prog->advance(i - counted);
+            counted = i;
+        }
+
         const uint64_t max_length = std::min<uint64_t>(end - i, max_copy_length);
 
         // returns SA^d[i + k]
@@ -348,6 +353,8 @@ void rlz<kind>::construction<value_func_t, intervals_t>::parse_range(uint64_t th
         num_lookahead -= length;
         i += length;
     }
+
+    if (prog != nullptr) prog->advance(end - counted);
 }
 
 template <array_kind_t kind>
@@ -450,7 +457,7 @@ void rlz<kind>::construction<value_func_t, intervals_t>::revise_reference()
     reference_segments = std::move(ref_segments.segments);
     log_message(log, "revised the reference");
     finish_phase("time_revise_rlz_reference");
-    if (log) std::cout << "|R| = " << format_number(reference_length) << std::endl;
+    if (log) log_out() << "|R| = " << format_number(reference_length) << std::endl;
 }
 
 template <array_kind_t kind>
@@ -466,7 +473,7 @@ void rlz<kind>::construction<value_func_t, intervals_t>::build_reference()
         .num_threads = p });
 
     log_phase_start(log, time, "choosing the segments of R");
-    choice.choose_segments();
+    choice.choose_segments(log);
     finish_phase("time_choose_rlz_reference_segments");
     log_message(log, "number of segments: " + format_number(choice.num_segments()) + "\n");
 
@@ -842,13 +849,11 @@ void rlz<kind>::construction<value_func_t, intervals_t>::build_parsing()
     finish_phase("time_build_rlz_factorization");
 
     if (log) {
-        if (!revision_log_msg.empty()) std::cout << revision_log_msg << std::endl;
-        std::cout << "z = " << format_number(num_phrases) << std::endl;
-        std::cout << "z_l/z = " << format_ratio(num_literals / (double) num_phrases) << std::endl;
-        std::cout << "z/r = " << format_ratio(num_phrases / (double) r) << std::endl;
-        std::cout << "removed " << format_number(num_removed) << " values from the reference that no phrase copies"
-                  << std::endl;
-        std::cout << "|R| = " << format_number(reference_length) << std::endl;
+        if (!revision_log_msg.empty()) log_out() << revision_log_msg << std::endl;
+        log_out() << "z = " << format_number(num_phrases) << ", z_l/z = "
+                  << format_ratio(num_literals / (double) num_phrases) << ", z/r = "
+                  << format_ratio(num_phrases / (double) r) << ", values removed from R = " << format_number(num_removed)
+                  << ", |R| = " << format_number(reference_length) << std::endl;
     }
 }
 

@@ -36,6 +36,7 @@
 
 #include <gtl/btree.hpp>
 #include <libsais40_types.hpp>
+#include <misc/log.hpp>
 #include <misc/memory.hpp>
 
 // seed of the random number generators of the construction (candidate segments and samples)
@@ -281,11 +282,12 @@ public:
 
     /**
      * @brief chooses the segments (choose_segments()) and closes the gaps between them (close_gaps())
+     * @param log whether the progress of choosing the segments is printed
      * @return the chosen segments, ascending by their starting positions
      */
-    std::vector<rlz_segment_t> choose()
+    std::vector<rlz_segment_t> choose(bool log = false)
     {
-        choose_segments();
+        choose_segments(log);
         close_gaps();
         return segments();
     }
@@ -294,8 +296,9 @@ public:
      * @brief draws and scores candidate segments and chooses the best one of each round, until the total
      *        length of the chosen segments reaches choose_share * target_length; continues after the rounds
      *        of the previous calls
+     * @param log whether the progress (the total length of the chosen segments) is printed
      */
-    void choose_segments();
+    void choose_segments(bool log = false);
 
     // closes the gaps between the chosen segments in descending order of their score
     void close_gaps();

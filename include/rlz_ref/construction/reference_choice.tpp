@@ -136,7 +136,7 @@ void rlz_reference_choice<scorer_t>::insert_chosen(uint64_t beg, uint64_t end, s
 }
 
 template <typename scorer_t>
-void rlz_reference_choice<scorer_t>::choose_segments()
+void rlz_reference_choice<scorer_t>::choose_segments(bool log)
 {
     if (target_length == 0 || n == 0) return;
 
@@ -169,6 +169,7 @@ void rlz_reference_choice<scorer_t>::choose_segments()
     std::vector<candidate_t> batch;
     batch.reserve(batch_length);
     uint64_t choose_until = choose_share * target_length;
+    phase_progress prog(log, choose_until);
 
     while (total_chosen_length < choose_until) {
         candidate_t best { 0, 0, 0 };
@@ -223,6 +224,7 @@ void rlz_reference_choice<scorer_t>::choose_segments()
         scorer.cover(0, best.beg, best.end);
         total_chosen_length += best.end - best.beg;
         chosen_in_order.emplace_back(rlz_segment_t { best.beg, best.end });
+        prog.reached(total_chosen_length);
     }
 }
 
