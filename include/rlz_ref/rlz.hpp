@@ -85,11 +85,12 @@ protected:
 
     /* R, the reference: the chosen segments of the input, concatenated in input order; the positions that no
        copy phrase copies are removed after the parse; [0..|R|-1] R[x] is a symbol of the input */
-    reference_t _reference;
+    reference_t _R;
     // PT, the phrase types: PT[x] = 1 <=> phrase x is literal
     plain_bit_vector _PT;
-    // bit vector of length n + 1 marking the starting positions of the phrases and position n (Elias-Fano)
-    elias_fano_bit_vector _phrase_starts;
+    // PS, the phrase starts: bit vector of length n + 1 marking the starting positions of the phrases and position n
+    // (Elias-Fano)
+    elias_fano_bit_vector _PS;
     // SR, the sources: SR[x] is the starting position in R of the x-th copy phrase, bit_width(|R|) bits each
     interleaved_bit_aligned_vectors _SR;
     // LP, the literal phrases: [0..z_l-1] LP[x] is the symbol of the x-th literal phrase
@@ -103,7 +104,7 @@ protected:
      */
     inline uint64_t phrase_length(uint64_t phrase) const
     {
-        const auto [beg, end] = _phrase_starts.select_1_pair(phrase + 1);
+        const auto [beg, end] = _PS.select_1_pair(phrase + 1);
         return end - beg;
     }
 
@@ -120,8 +121,8 @@ protected:
      */
     inline phrase_bounds_t phrase_bounds_at(uint64_t pos) const
     {
-        const uint64_t phrase = _phrase_starts.rank_1(pos + 1) - 1;
-        const auto [beg, end] = _phrase_starts.select_1_pair(phrase + 1);
+        const uint64_t phrase = _PS.rank_1(pos + 1) - 1;
+        const auto [beg, end] = _PS.select_1_pair(phrase + 1);
         return { phrase, beg, end };
     }
 
@@ -130,7 +131,7 @@ protected:
     {
         bounds.phrase++;
         bounds.beg = bounds.end;
-        bounds.end = bounds.phrase + 1 < z ? _phrase_starts.select_1(bounds.phrase + 2) : n;
+        bounds.end = bounds.phrase + 1 < z ? _PS.select_1(bounds.phrase + 2) : n;
     }
 
     // moves bounds back to the previous phrase (bounds must not be the first phrase)
@@ -138,7 +139,7 @@ protected:
     {
         bounds.phrase--;
         bounds.end = bounds.beg;
-        bounds.beg = _phrase_starts.select_1(bounds.phrase + 1);
+        bounds.beg = _PS.select_1(bounds.phrase + 1);
     }
 
 public:
@@ -166,9 +167,9 @@ public:
         interleaved_bit_aligned_vectors&& SR,
         interleaved_bit_aligned_vectors&& LP)
         : n(n), z(z), z_l(z_l), z_c(z_c)
-        , _reference(std::move(reference))
+        , _R(std::move(reference))
         , _PT(std::move(PT))
-        , _phrase_starts(std::move(phrase_starts))
+        , _PS(std::move(phrase_starts))
         , _SR(std::move(SR))
         , _LP(std::move(LP))
     { }
@@ -191,7 +192,10 @@ public:
     inline uint64_t num_copy_phrases() const { return z_c; }
 
     // returns R
-    inline const reference_t& reference() const { return _reference; }
+    inline const reference_t& R() const { return _R; }
+
+    // returns PS
+    inline const elias_fano_bit_vector& PS() const { return _PS; }
 
     // returns PT
     inline const plain_bit_vector& PT() const { return _PT; }
@@ -206,10 +210,10 @@ public:
      * @brief returns R[x]
      * @param x [0..|R|-1] index in R
      */
-    inline uint64_t reference(uint64_t x) const { return _reference[x]; }
+    inline uint64_t R(uint64_t x) const { return _R[x]; }
 
     // returns |R|
-    inline uint64_t reference_length() const { return _reference.size(); }
+    inline uint64_t reference_length() const { return _R.size(); }
 
     /**
      * @brief returns PT[x]
@@ -234,7 +238,7 @@ public:
     // returns the size of the data structure in bytes
     uint64_t size_in_bytes() const
     {
-        return _reference.size_in_bytes() + _phrase_starts.size_in_bytes() + _SR.size_in_bytes()
+        return _R.size_in_bytes() + _PS.size_in_bytes() + _SR.size_in_bytes()
             + _LP.size_in_bytes() + _PT.size_in_bytes();
     }
 
@@ -245,8 +249,8 @@ public:
      */
     void log_data_structure_sizes(std::ostream& out, std::string suffix = "") const
     {
-        out << " size_reference" << suffix << "=" << _reference.size_in_bytes();
-        out << " size_phrases" << suffix << "=" << _phrase_starts.size_in_bytes();
+        out << " size_reference" << suffix << "=" << _R.size_in_bytes();
+        out << " size_phrases" << suffix << "=" << _PS.size_in_bytes();
         out << " size_sources" << suffix << "=" << _SR.size_in_bytes();
         out << " size_literals" << suffix << "=" << _LP.size_in_bytes();
         out << " size_pt" << suffix << "=" << _PT.size_in_bytes();
@@ -265,8 +269,8 @@ public:
         out.write((char*) &z_l, sizeof(uint64_t));
         out.write((char*) &z_c, sizeof(uint64_t));
 
-        _reference.serialize(out);
-        _phrase_starts.serialize(out);
+        _R.serialize(out);
+        _PS.serialize(out);
         _SR.serialize(out);
         _LP.serialize(out);
         _PT.serialize(out);
@@ -283,8 +287,8 @@ public:
         in.read((char*) &z_l, sizeof(uint64_t));
         in.read((char*) &z_c, sizeof(uint64_t));
 
-        _reference.load(in);
-        _phrase_starts.load(in);
+        _R.load(in);
+        _PS.load(in);
         _SR.load(in);
         _LP.load(in);
         _PT.load(in);
@@ -543,7 +547,7 @@ public:
      * @brief constructs the rlz of SA^d (see construction/construction.hpp)
      * @tparam sad_func_t type of the function returning the values of SA^d, callable as sad_func_t(i_p, i)
      *         for thread i_p and position i
-     * @tparam intervals_t type of the disjoint interval sequence of Phi^{-1}
+     * @tparam intervals_t type of the disjoint interval sequence of Phi_inv
      */
     template <typename sad_func_t = std::monostate, typename intervals_t = std::monostate> class construction;
 };

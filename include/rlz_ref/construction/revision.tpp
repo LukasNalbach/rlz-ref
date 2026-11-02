@@ -365,16 +365,19 @@ rlz_revised_reference rlz_revision::revise(const rlz_reference_segments& ref_seg
 
 template <typename phrase_count_t>
 std::string rlz_revision::describe(uint64_t reference_length, const rlz_parse_stats<phrase_count_t>& stats,
-    const rlz_revised_reference& revised)
+    const rlz_revised_reference& revised, bool applied)
 {
     const std::string estimated = stats.whole() ? "" : "~";
-    return "  revising: |R| = " + format_number(reference_length) + "\n"
-        + "    " + estimated + "z = " + format_number(uint64_t(stats.z * stats.scale)) + "\n"
-        + "    " + estimated + "size = " + format_size(uint64_t(revised.estimated_bytes)) + "\n"
-        + "    blocks added = " + format_number(revised.num_added_blocks) + "\n"
-        + "    ends of segments lengthened = " + format_number(revised.num_lengthened_ends) + "\n"
-        + "    blocks added at the ends of segments = " + format_number(revised.num_lengthening_blocks) + "\n"
-        + "    expected saving = " + format_size(uint64_t(revised.gain));
+    // the lengthened ends of segments are only named if there are any
+    const std::string lengthened = revised.num_lengthened_ends == 0 ? "" : ", "
+        + format_count(revised.num_lengthened_ends, "segment end") + " lengthened by "
+        + format_count(revised.num_lengthening_blocks, "block");
+    const std::string first_line = "  |R| = " + format_number(reference_length) + ", " + estimated + "z = "
+        + format_number(uint64_t(stats.z * stats.scale)) + ", " + estimated
+        + format_size(uint64_t(revised.estimated_bytes)) + " in total\n";
+    if (!applied) return first_line + "  not applied (~" + format_size(uint64_t(revised.gain)) + " would be saved)";
+    return first_line + "  " + format_count(revised.num_added_blocks, "block") + " added" + lengthened + ", ~"
+        + format_size(uint64_t(revised.gain)) + " saved";
 }
 
 #endif // RLZ_REF_RLZ_REF_CONSTRUCTION_REVISION_TPP

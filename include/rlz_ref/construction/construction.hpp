@@ -106,16 +106,16 @@ public:
  * @brief constructs the rlz of SA^d, the differential suffix array: SA^d[i] = SA[i] - SA[i-1] + n for i in
  *        [1..n-1] and SA^d[0] = SA[0] (stored as SA[0] + n, see first_value)
  *
- * 1. computes the frequency of each value in SA^d from I_Phi^{-1}
+ * 1. computes the frequency of each value in SA^d from I_Phi_inv
  * 2. chooses R (see rlz_reference_choice and rlz_value_frequency_scorer); unless a length is given, several
  *    lengths of R are tried on a sample of SA^d (see tune_reference) and R is revised (see revise_reference)
  * 3. builds the suffix array of R (see rlz_reference_matcher)
  * 4. parses SA^d greedily into longest matches in R; each thread parses one range of SA^d; R can be revised
  *    by the parse and SA^d parsed again (see build_parsing)
  * @tparam value_func_t type of the function returning SA^d[i]
- * @tparam intervals_t type of the disjoint interval sequence of Phi^{-1}: for i in [0..r-1], get<0>(i) returns the
+ * @tparam intervals_t type of the disjoint interval sequence of Phi_inv: for i in [0..r-1], get<0>(i) returns the
  *         starting position p_i of the i-th input interval in ascending order (p_0 = 0) and get<1>(i) returns
- *         Phi^{-1}(p_i); clear() frees it
+ *         Phi_inv(p_i); clear() frees it
  */
 template <array_kind_t kind>
 template <typename value_func_t, typename intervals_t>
@@ -155,7 +155,7 @@ protected:
 
     rlz& built; // the rlz to build
     value_func_t value_at; // value_at(i_p, i) returns SA^d[i]; evaluated by thread i_p
-    intervals_t& I_Phi_inv; // the disjoint interval sequence of Phi^{-1}; cleared after computing the frequencies
+    intervals_t& I_Phi_inv; // the disjoint interval sequence of Phi_inv; cleared after computing the frequencies
 
     uint64_t n; // the length of T
     uint64_t r; // r, the number of runs in L
@@ -399,7 +399,7 @@ public:
     /**
      * @param built the rlz to build
      * @param value_at function returning SA^d[i] (callable as value_at(thread, i))
-     * @param I_Phi_inv the disjoint interval sequence of Phi^{-1}
+     * @param I_Phi_inv the disjoint interval sequence of Phi_inv
      * @param n the length of T
      * @param r the number of runs in L
      * @param params optional construction parameters

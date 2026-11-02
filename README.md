@@ -19,7 +19,7 @@ cmake --build build -j
 ```
 
 `cmake` downloads the submodule [string-utils](https://github.com/LukasNalbach/string-utils). The tests are written to
-`build/tests/` (`RLZ_REF_BUILD_TESTS`, `ON` if rlz-ref is the top-level project). The general options and environment
+`build/tests/` if `RLZ_REF_BUILD_TESTS` is switched on (`OFF` by default). The general options and environment
 variables (`RLZ_REF_MARCH_NATIVE`, ...) are described in string-utils.
 
 ## C++ usage
@@ -32,7 +32,7 @@ target_link_libraries(<target> PRIVATE rlz_ref)
 ```
 
 The construction reads the differential suffix array from a function and needs the disjoint interval sequence of
-Phi^{-1}:
+Phi_inv:
 
 ```cpp
 #include <algorithm>
@@ -95,6 +95,8 @@ int main()
 ## Tests
 
 ```shell
+cmake -B build -DRLZ_REF_BUILD_TESTS=ON
+cmake --build build
 build/tests/test-rlz-ref
 ```
 

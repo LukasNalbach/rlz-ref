@@ -95,7 +95,7 @@ inline void rlz<kind>::decode_context_t::skip_right(uint64_t e)
         while (i < e && !parsing->PT(x_p)) {
             // decode the x_cp-th copy phrase
             while (i < s_np && i < e) {
-                add_difference<RIGHT>(parsing->reference(), x_r);
+                add_difference<RIGHT>(parsing->R(), x_r);
                 i++;
                 x_r++;
             }
@@ -133,7 +133,7 @@ inline void rlz<kind>::decode_context_t::skip_left(uint64_t b)
         while (i > b && !parsing->PT(x_p)) {
             // skip the x_cp-th copy phrase
             while (i >= s_np && i > b) {
-                add_difference<LEFT>(parsing->reference(), x_r);
+                add_difference<LEFT>(parsing->R(), x_r);
                 i--;
                 x_r--;
             }
@@ -176,7 +176,7 @@ inline uint64_t rlz<kind>::decode_context_t::prev()
         enter_previous_phrase_from_literal();
     } else {
         // copy phrase
-        add_difference<LEFT>(parsing->reference(), x_r);
+        add_difference<LEFT>(parsing->R(), x_r);
         i--;
         x_r--;
 
@@ -197,7 +197,7 @@ inline uint64_t rlz<kind>::decode_context_t::next()
         enter_next_phrase_from_literal();
     } else {
         // copy phrase
-        add_difference<RIGHT>(parsing->reference(), x_r);
+        add_difference<RIGHT>(parsing->R(), x_r);
         i++;
         x_r++;
 
@@ -217,7 +217,7 @@ inline void rlz<kind>::decode_context_t::report_left(uint64_t b, report_fnc_t re
         while (!parsing->PT(x_p)) {
             // decode the x_cp-th copy phrase
             while (i >= s_np) {
-                add_difference<LEFT>(parsing->reference(), x_r);
+                add_difference<LEFT>(parsing->R(), x_r);
                 i--;
                 x_r--;
                 report(i, s);
@@ -271,7 +271,7 @@ inline void rlz<kind>::decode_context_t::report_right(uint64_t e, report_fnc_t r
         while (!parsing->PT(x_p)) {
             // decode the x_cp-th copy phrase
             while (i < s_np) {
-                add_difference<RIGHT>(parsing->reference(), x_r);
+                add_difference<RIGHT>(parsing->R(), x_r);
                 report(i, s);
                 i++;
                 x_r++;

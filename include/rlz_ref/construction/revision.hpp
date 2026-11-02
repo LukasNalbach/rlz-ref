@@ -264,16 +264,17 @@ public:
         uint64_t max_reference_length = rlz_max_reference_length);
 
     /**
-     * @brief returns the log message describing a revision: |R| and below it, indented, z, the size, the numbers of
-     *        added blocks, of lengthened ends of segments and of blocks added at them, and the expected saving, one per
-     *        line (without a final line break)
+     * @brief returns the log message describing a revision in two indented lines: |R|, z and the size, then the
+     *        numbers of added blocks, of lengthened ends of segments and of blocks added at them, and the expected
+     *        saving, or that the revision is not applied (without a final line break)
      * @param reference_length |R| before the revision
      * @param stats statistics of the parse the revision is computed from
      * @param revised the revision
+     * @param applied whether the revision is applied
      */
     template <typename phrase_count_t>
     static std::string describe(uint64_t reference_length, const rlz_parse_stats<phrase_count_t>& stats,
-        const rlz_revised_reference& revised);
+        const rlz_revised_reference& revised, bool applied);
 };
 
 #include <rlz_ref/construction/revision.tpp>

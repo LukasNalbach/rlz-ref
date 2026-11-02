@@ -80,12 +80,11 @@ template <array_kind_t kind>
 template <typename value_func_t, typename intervals_t>
 void rlz<kind>::construction<value_func_t, intervals_t>::build_value_frequencies()
 {
-    log_message(log, "building the RLZ encoding:\n");
     log_phase_start(log, time, "computing value frequencies");
 
     value_frequency.reserve(r);
 
-    // the i-th pair of I_Phi^{-1} yields a value of SA^d and its number of occurrences in the i-th interval
+    // the i-th pair of I_Phi_inv yields a value of SA^d and its number of occurrences in the i-th interval
     for (uint64_t i = 0; i < r; i++) {
         uint64_t value = (I_Phi_inv.template get<1>(i) + n) - I_Phi_inv.template get<0>(i);
         uint64_t occurrences = (i == r - 1 ? n : I_Phi_inv.template get<0>(i + 1)) - I_Phi_inv.template get<0>(i);
@@ -214,10 +213,10 @@ void rlz<kind>::construction<value_func_t, intervals_t>::estimate_size(tried_t& 
     tried.estimate.bytes = estimate_bytes(n, tried.length(), uint64_t(z * scale), uint64_t(z_l * scale));
 
     if (log) {
-        log_out() << "  tuning: s = " << format_number(tried.target_length) << " ("
+        log_out() << "  s = " << format_number(tried.target_length) << " ("
                   << format_ratio(tried.length() / double(r)) << " r), |R| = " << format_number(tried.length())
-                  << ", ~z = " << format_number(uint64_t(z * scale)) << ", ~size = "
-                  << format_size(uint64_t(tried.estimate.bytes)) << std::endl;
+                  << ", ~z = " << format_number(uint64_t(z * scale)) << ", ~"
+                  << format_size(uint64_t(tried.estimate.bytes)) << " in total" << std::endl;
     }
 }
 
@@ -225,7 +224,8 @@ template <array_kind_t kind>
 template <typename value_func_t, typename intervals_t>
 void rlz<kind>::construction<value_func_t, intervals_t>::tune_reference()
 {
-    log_phase_start(log, time, "tuning R\n");
+    log_block_begin(log, "tuning R");
+    log_phase_start(log, time, "");
 
     // the sample: windows of SA^d at random positions (about n / 100 values in total, at least 1024 and at
     // most 2^22); each window is read and parsed from one window length before its start
@@ -301,9 +301,10 @@ void rlz<kind>::construction<value_func_t, intervals_t>::tune_reference()
         reference_tuned = true;
     }
 
-    log_message(log, "chose a reference of " + format_number(reference_target_length) + " values ("
-        + format_ratio(reference_target_length / double(r)) + " r)");
+    log_message(log, "chose |R| = " + format_number(reference_length) + " ("
+        + format_ratio(reference_length / double(r)) + " r)");
     finish_phase("time_tune_rlz_reference");
+    log_block_end(log);
 }
 
 template <array_kind_t kind>
@@ -439,25 +440,30 @@ template <array_kind_t kind>
 template <typename value_func_t, typename intervals_t>
 void rlz<kind>::construction<value_func_t, intervals_t>::revise_reference()
 {
-    log_phase_start(log, time, "revising R on a sample\n");
+    log_block_begin(log, "revising R on a sample");
+    log_phase_start(log, time, "");
 
     rlz_reference_segments ref_segments;
     ref_segments.segments = std::move(reference_segments);
     ref_segments.compute_begins();
 
+    bool revised_any = false; // true <=> a round was applied
+
     for (uint64_t round = 0; round < revision_params.sampled_rounds; round++) {
         const rlz_parse_stats<uint16_t> stats = parse_sample(ref_segments, revision.draw_blocks());
         rlz_revised_reference revised = revise(ref_segments, stats);
-        log_message(log, rlz_revision::describe(reference_length, stats, revised) + "\n");
         // stop if the round is expected to save less than min_gain of the size of the rlz
-        if (revised.gain < revision_params.min_gain * revised.estimated_bytes) break;
+        const bool apply = revised.gain >= revision_params.min_gain * revised.estimated_bytes;
+        log_message(log, rlz_revision::describe(reference_length, stats, revised, apply) + "\n");
+        if (!apply) break;
         apply_revision(ref_segments, std::move(revised.ref_segments));
+        revised_any = true;
     }
 
     reference_segments = std::move(ref_segments.segments);
-    log_message(log, "revised the reference");
+    log_message(log, (revised_any ? "revised R to |R| = " : "kept R with |R| = ") + format_number(reference_length));
     finish_phase("time_revise_rlz_reference");
-    if (log) log_out() << "|R| = " << format_number(reference_length) << std::endl;
+    log_block_end(log);
 }
 
 template <array_kind_t kind>
@@ -475,12 +481,12 @@ void rlz<kind>::construction<value_func_t, intervals_t>::build_reference()
     log_phase_start(log, time, "choosing the segments of R");
     choice.choose_segments(log);
     finish_phase("time_choose_rlz_reference_segments");
-    log_message(log, "number of segments: " + format_number(choice.num_segments()) + "\n");
+    log_message(log, format_count(choice.num_segments(), "segment") + "\n");
 
     log_phase_start(log, time, "closing the gaps between the segments");
     choice.close_gaps();
     finish_phase("time_close_rlz_reference_gaps");
-    log_message(log, "number of segments: " + format_number(choice.num_segments()) + "\n");
+    log_message(log, format_count(choice.num_segments(), "segment") + "\n");
 
     log_phase_start(log, time, "building R");
 
@@ -548,7 +554,6 @@ void rlz<kind>::construction<value_func_t, intervals_t>::build_parsing()
     log_phase_start(log, time, "computing the RLZ encoding");
 
     uint64_t num_phrases = 0, num_literals = 0, num_copies = 0;
-    std::string revision_log_msg; // log message of a revision by the parse that was not applied
     uint8_t source_width = std::bit_width(reference_length); // SR stores positions in R
     uint8_t literal_width = rlz::value_width(n); // LP stores values in [0..2n]
 
@@ -686,12 +691,10 @@ void rlz<kind>::construction<value_func_t, intervals_t>::build_parsing()
 
         revision.add_counters(stats, counters);
         rlz_revised_reference revised = revise(ref_segments, stats);
-        revision_log_msg = rlz_revision::describe(reference_length, stats, revised);
         if (!revised.changes() || revised.gain < revision_params.min_gain * revised.estimated_bytes) break;
 
         finish_phase("time_build_rlz_first_factorization");
-        log_message(log, revision_log_msg + "\n");
-        revision_log_msg.clear();
+        log_message(log, rlz_revision::describe(reference_length, stats, revised, true) + "\n");
         log_phase_start(log, time, "revising R");
 
         if constexpr (space == _on_disk) {
@@ -848,13 +851,8 @@ void rlz<kind>::construction<value_func_t, intervals_t>::build_parsing()
 
     finish_phase("time_build_rlz_factorization");
 
-    if (log) {
-        if (!revision_log_msg.empty()) log_out() << revision_log_msg << std::endl;
-        log_out() << "z = " << format_number(num_phrases) << ", z_l/z = "
-                  << format_ratio(num_literals / (double) num_phrases) << ", z/r = "
-                  << format_ratio(num_phrases / (double) r) << ", values removed from R = " << format_number(num_removed)
-                  << ", |R| = " << format_number(reference_length) << std::endl;
-    }
+    // the values of R that no phrase copies; the summary of the encoding is logged by the caller
+    if (log && num_removed > 0) log_out() << "removed " << format_count(num_removed, "unused value") << " from |R|" << std::endl;
 }
 
 #endif // RLZ_REF_RLZ_REF_CONSTRUCTION_CONSTRUCTION_TPP
