@@ -51,14 +51,14 @@ constexpr char min_input_symbol = std::numeric_limits<char>::min();
 constexpr char max_input_symbol = std::numeric_limits<char>::max() - 2;
 
 /**
- * @brief the disjoint interval sequence of Phi^{-1} of a suffix array SA[0..n-1]: the pairs (SA[i-1], SA[i]) of the
+ * @brief the disjoint interval sequence of Phi_inv of a suffix array SA[0..n-1]: the pairs (SA[i-1], SA[i]) of the
  *        starting positions i of the runs in the BWT (SA[n-1] for i = 0), ascending by their first value (see
  *        rlz::construction)
  */
 struct phi_inv_intervals {
     std::vector<std::pair<uint64_t, uint64_t>> pairs;
 
-    // returns the starting position of the i-th input interval (column 0) or its image under Phi^{-1} (column 1)
+    // returns the starting position of the i-th input interval (column 0) or its image under Phi_inv (column 1)
     template <uint8_t column>
     uint64_t get(uint64_t i) const { return column == 0 ? pairs[i].first : pairs[i].second; }
 

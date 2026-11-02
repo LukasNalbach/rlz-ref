@@ -41,15 +41,15 @@ inline void rlz<kind>::log_data_structures() const
 
     // the values of R and LP are printed without the offset n
     aligned_table log_r;
-    log_r.add_row("reference:", _reference.size(), [&](uint64_t i) {
-        return (int64_t) _reference[i] - (int64_t) n; });
+    log_r.add_row("R:", _R.size(), [&](uint64_t i) {
+        return (int64_t) _R[i] - (int64_t) n; });
     log_r.print();
 
-    log_indexed("types:", _PT);
-    log_indexed("sources:", _SR);
+    log_indexed("PT:", _PT);
+    log_indexed("SR:", _SR);
 
     aligned_table log_lp;
-    log_lp.add_row("literals:", _LP.size(), [&](uint64_t i) {
+    log_lp.add_row("LP:", _LP.size(), [&](uint64_t i) {
         return (int64_t) _LP[i] - (int64_t) n; });
     log_lp.print();
 }
@@ -59,11 +59,11 @@ inline void rlz<kind>::log_data_structure_sizes() const
 {
     // SA_rlz is a component of an index; its parts are listed below it
     log_component("SA_rlz", size_in_bytes());
-    log_component("reference", _reference.size_in_bytes(), 1);
-    log_component("phrases", _phrase_starts.size_in_bytes(), 1);
-    log_component("types", _PT.size_in_bytes(), 1);
-    log_component("sources", _SR.size_in_bytes(), 1);
-    log_component("literals", _LP.size_in_bytes(), 1);
+    log_component("R", _R.size_in_bytes(), 1);
+    log_component("PS", _PS.size_in_bytes(), 1);
+    log_component("PT", _PT.size_in_bytes(), 1);
+    log_component("SR", _SR.size_in_bytes(), 1);
+    log_component("LP", _LP.size_in_bytes(), 1);
 }
 
 #endif // RLZ_REF_RLZ_REF_RLZ_TPP

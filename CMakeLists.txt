@@ -28,7 +28,7 @@ endif()
 # the libraries of string-utils beyond its core that are used here
 string_utils_add_components(libsais gtl emhash)
 
-option(RLZ_REF_BUILD_TESTS "Build the tests" ${PROJECT_IS_TOP_LEVEL})
+option(RLZ_REF_BUILD_TESTS "Build the tests" OFF)
 
 add_library(rlz_ref INTERFACE)
 target_include_directories(rlz_ref INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include/")
