@@ -22,6 +22,19 @@ cmake --build build -j
 `build/tests/` if `RLZ_REF_BUILD_TESTS` is switched on (`OFF` by default). The general options and environment
 variables (`RLZ_REF_MARCH_NATIVE`, ...) are described in string-utils.
 
+### macOS
+
+Apple Clang has no OpenMP runtime; install LLVM's `libomp` and the build tools with [Homebrew](https://brew.sh) (the
+compiler comes with Xcode or the Command Line Tools, `xcode-select --install`):
+
+```shell
+brew install cmake ninja libomp
+```
+
+Then build as above. CMake finds `libomp` in Homebrew or MacPorts, or in the prefix given with `-DOpenMP_ROOT=<prefix>`;
+see [string-utils](https://github.com/LukasNalbach/string-utils#macos) for the details and the differences from Linux.
+Tested on Apple silicon with Apple Clang 21 (macOS 26).
+
 ## C++ usage
 
 Add rlz-ref to a CMake project and link the target `rlz_ref`:
