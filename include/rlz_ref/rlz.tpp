@@ -66,4 +66,44 @@ inline void rlz<kind>::log_data_structure_sizes() const
     log_component("LP", _LP.size_in_bytes(), 1);
 }
 
+template <typename reference_t>
+inline void rlz_phrases<reference_t>::log_data_structure_sizes(std::ostream& out, std::string suffix) const
+{
+    out << " size_reference" << suffix << "=" << _R.size_in_bytes();
+    out << " size_phrases" << suffix << "=" << _PS.size_in_bytes();
+    out << " size_sources" << suffix << "=" << _SR.size_in_bytes();
+    out << " size_literals" << suffix << "=" << _LP.size_in_bytes();
+    out << " size_pt" << suffix << "=" << _PT.size_in_bytes();
+}
+
+template <typename reference_t>
+inline void rlz_phrases<reference_t>::serialize(std::ostream& out) const
+{
+    out.write((char*) &n, sizeof(uint64_t));
+    out.write((char*) &z, sizeof(uint64_t));
+    out.write((char*) &z_l, sizeof(uint64_t));
+    out.write((char*) &z_c, sizeof(uint64_t));
+
+    _R.serialize(out);
+    _PS.serialize(out);
+    _SR.serialize(out);
+    _LP.serialize(out);
+    _PT.serialize(out);
+}
+
+template <typename reference_t>
+inline void rlz_phrases<reference_t>::load(std::istream& in)
+{
+    in.read((char*) &n, sizeof(uint64_t));
+    in.read((char*) &z, sizeof(uint64_t));
+    in.read((char*) &z_l, sizeof(uint64_t));
+    in.read((char*) &z_c, sizeof(uint64_t));
+
+    _R.load(in);
+    _PS.load(in);
+    _SR.load(in);
+    _LP.load(in);
+    _PT.load(in);
+}
+
 #endif // RLZ_REF_RLZ_REF_RLZ_TPP

@@ -247,14 +247,7 @@ public:
      * @param out an output stream
      * @param suffix suffix appended to each measurement key
      */
-    void log_data_structure_sizes(std::ostream& out, std::string suffix = "") const
-    {
-        out << " size_reference" << suffix << "=" << _R.size_in_bytes();
-        out << " size_phrases" << suffix << "=" << _PS.size_in_bytes();
-        out << " size_sources" << suffix << "=" << _SR.size_in_bytes();
-        out << " size_literals" << suffix << "=" << _LP.size_in_bytes();
-        out << " size_pt" << suffix << "=" << _PT.size_in_bytes();
-    }
+    void log_data_structure_sizes(std::ostream& out, std::string suffix = "") const;
 
     // ############################# SERIALIZATION METHODS #############################
 
@@ -262,37 +255,13 @@ public:
      * @brief stores the phrases to an output stream
      * @param out output stream to store the phrases to
      */
-    void serialize(std::ostream& out) const
-    {
-        out.write((char*) &n, sizeof(uint64_t));
-        out.write((char*) &z, sizeof(uint64_t));
-        out.write((char*) &z_l, sizeof(uint64_t));
-        out.write((char*) &z_c, sizeof(uint64_t));
-
-        _R.serialize(out);
-        _PS.serialize(out);
-        _SR.serialize(out);
-        _LP.serialize(out);
-        _PT.serialize(out);
-    }
+    void serialize(std::ostream& out) const;
 
     /**
      * @brief reads serialized phrases from an input stream
      * @param in an input stream storing serialized phrases
      */
-    void load(std::istream& in)
-    {
-        in.read((char*) &n, sizeof(uint64_t));
-        in.read((char*) &z, sizeof(uint64_t));
-        in.read((char*) &z_l, sizeof(uint64_t));
-        in.read((char*) &z_c, sizeof(uint64_t));
-
-        _R.load(in);
-        _PS.load(in);
-        _SR.load(in);
-        _LP.load(in);
-        _PT.load(in);
-    }
+    void load(std::istream& in);
 };
 
 /**
