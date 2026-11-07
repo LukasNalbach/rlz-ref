@@ -24,6 +24,11 @@
  * SOFTWARE.
  */
 
+/**
+ * @file construction.tpp
+ * @brief the methods of the construction: the reference, its tuning and revision, and the parsing
+ */
+
 #ifndef RLZ_REF_RLZ_REF_CONSTRUCTION_CONSTRUCTION_TPP
 #define RLZ_REF_RLZ_REF_CONSTRUCTION_CONSTRUCTION_TPP
 

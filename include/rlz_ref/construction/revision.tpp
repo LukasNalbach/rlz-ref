@@ -24,6 +24,11 @@
  * SOFTWARE.
  */
 
+/**
+ * @file revision.tpp
+ * @brief the methods of rlz_revision
+ */
+
 #ifndef RLZ_REF_RLZ_REF_CONSTRUCTION_REVISION_TPP
 #define RLZ_REF_RLZ_REF_CONSTRUCTION_REVISION_TPP
 

@@ -24,6 +24,11 @@
  * SOFTWARE.
  */
 
+/**
+ * @file queries.tpp
+ * @brief decoding the RLZ of the differential suffix array to the left and to the right
+ */
+
 #ifndef RLZ_REF_RLZ_REF_QUERIES_TPP
 #define RLZ_REF_RLZ_REF_QUERIES_TPP
 

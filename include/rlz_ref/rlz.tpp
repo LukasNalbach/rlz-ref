@@ -24,6 +24,11 @@
  * SOFTWARE.
  */
 
+/**
+ * @file rlz.tpp
+ * @brief the logging, storing and loading of rlz
+ */
+
 #ifndef RLZ_REF_RLZ_REF_RLZ_TPP
 #define RLZ_REF_RLZ_REF_RLZ_TPP
 

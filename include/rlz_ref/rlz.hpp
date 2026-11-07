@@ -24,6 +24,11 @@
  * SOFTWARE.
  */
 
+/**
+ * @file rlz.hpp
+ * @brief the relative Lempel-Ziv (RLZ) encoding of an integer sequence with random access
+ */
+
 #ifndef RLZ_REF_RLZ_REF_RLZ_HPP
 #define RLZ_REF_RLZ_REF_RLZ_HPP
 

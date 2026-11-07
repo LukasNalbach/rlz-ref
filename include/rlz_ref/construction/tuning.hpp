@@ -24,6 +24,11 @@
  * SOFTWARE.
  */
 
+/**
+ * @file tuning.hpp
+ * @brief the tuning of the reference length of an RLZ with size estimates of samples
+ */
+
 #ifndef RLZ_REF_RLZ_REF_CONSTRUCTION_TUNING_HPP
 #define RLZ_REF_RLZ_REF_CONSTRUCTION_TUNING_HPP
 

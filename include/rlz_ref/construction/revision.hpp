@@ -24,6 +24,11 @@
  * SOFTWARE.
  */
 
+/**
+ * @file revision.hpp
+ * @brief the revision of the reference of an RLZ
+ */
+
 #ifndef RLZ_REF_RLZ_REF_CONSTRUCTION_REVISION_HPP
 #define RLZ_REF_RLZ_REF_CONSTRUCTION_REVISION_HPP
 

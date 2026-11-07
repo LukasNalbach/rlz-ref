@@ -24,6 +24,11 @@
  * SOFTWARE.
  */
 
+/**
+ * @file test-rlz-ref.cpp
+ * @brief fuzz tests of the RLZ of the differential suffix array
+ */
+
 #include <algorithm>
 #include <random>
 #include <string>

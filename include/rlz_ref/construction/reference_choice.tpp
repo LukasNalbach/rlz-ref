@@ -24,6 +24,11 @@
  * SOFTWARE.
  */
 
+/**
+ * @file reference_choice.tpp
+ * @brief the methods of the choice of the reference
+ */
+
 #ifndef RLZ_REF_RLZ_REF_CONSTRUCTION_REFERENCE_CHOICE_TPP
 #define RLZ_REF_RLZ_REF_CONSTRUCTION_REFERENCE_CHOICE_TPP
 
