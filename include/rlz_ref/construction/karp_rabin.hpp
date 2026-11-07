@@ -24,6 +24,11 @@
  * SOFTWARE.
  */
 
+/**
+ * @file karp_rabin.hpp
+ * @brief Karp-Rabin fingerprints of k-mers modulo 2^61 - 1
+ */
+
 #ifndef RLZ_REF_RLZ_REF_CONSTRUCTION_KARP_RABIN_HPP
 #define RLZ_REF_RLZ_REF_CONSTRUCTION_KARP_RABIN_HPP
 

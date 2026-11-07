@@ -24,6 +24,11 @@
  * SOFTWARE.
  */
 
+/**
+ * @file spill_vector.hpp
+ * @brief a sequence of integers of a fixed bit width in a temporary file
+ */
+
 #ifndef RLZ_REF_RLZ_REF_CONSTRUCTION_SPILL_VECTOR_HPP
 #define RLZ_REF_RLZ_REF_CONSTRUCTION_SPILL_VECTOR_HPP
 

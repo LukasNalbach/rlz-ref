@@ -24,6 +24,11 @@
  * SOFTWARE.
  */
 
+/**
+ * @file construction.hpp
+ * @brief the construction of the RLZ of the differential suffix array
+ */
+
 #ifndef RLZ_REF_RLZ_REF_CONSTRUCTION_CONSTRUCTION_HPP
 #define RLZ_REF_RLZ_REF_CONSTRUCTION_CONSTRUCTION_HPP
 

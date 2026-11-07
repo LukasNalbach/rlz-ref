@@ -24,6 +24,11 @@
  * SOFTWARE.
  */
 
+/**
+ * @file reference_choice.hpp
+ * @brief the choice of the reference of an RLZ: candidate segments and their scores
+ */
+
 #ifndef RLZ_REF_RLZ_REF_CONSTRUCTION_REFERENCE_CHOICE_HPP
 #define RLZ_REF_RLZ_REF_CONSTRUCTION_REFERENCE_CHOICE_HPP
 
