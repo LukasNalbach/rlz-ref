@@ -70,7 +70,7 @@ inline double rlz_estimate_SR_bytes(uint64_t z_c, uint64_t reference_length)
     return z_c * double(std::bit_width(std::max<uint64_t>(1, reference_length))) / 8.0;
 }
 
-// returns whether R occupies less than 5 % of the size of the rlz
+// returns whether the size of R is less than 5 % of the size of the rlz
 inline bool rlz_reference_is_small(const rlz_size_estimate_t& estimate)
 {
     return estimate.reference_bytes < 0.05 * estimate.bytes;
@@ -80,8 +80,8 @@ inline bool rlz_reference_is_small(const rlz_size_estimate_t& estimate)
  * @brief returns whether an rlz built with a reference of twice the length is expected to be smaller
  *
  * Returns false if 1.8 times the size of R is at least min(smallest, last.bytes). Else, the number of
- * phrases is assumed to decrease by the same factor as with the last doubling; returns true if the phrases
- * saved this way occupy more than 1.1 times the size of R.
+ * phrases is assumed to decrease by the same factor as with the last doubling; returns true if the size of the
+ * phrases saved this way is more than 1.1 times the size of R.
  * @param before estimate for the length before the last one (nullptr if there is none)
  * @param last estimate for the last length
  * @param smallest size in bytes of the smallest rlz estimated so far
@@ -153,7 +153,7 @@ struct rlz_tried_reference_t {
  *
  * 1. Tries first, 2 * first, 4 * first, ... (at most cap): the doubling continues while the estimate
  *    decreases (or R is small, see rlz_reference_is_small) and rlz_should_double_reference() returns true.
- * 2. If first yields the smallest estimate, tries first / 2, first / 4, ... (at least min_length), while the
+ * 2. If the estimate for first is the smallest, tries first / 2, first / 4, ... (at least min_length), while the
  *    estimate decreases.
  * @param best the tried reference with the smallest estimate (initially empty)
  * @param next_smaller if not nullptr, the tried reference of the next smaller length before best (empty if
@@ -181,7 +181,7 @@ void rlz_search_target_length(tried_t& best, tried_t* next_smaller, uint64_t fir
     for (uint64_t target_length = first;; target_length = std::min<uint64_t>(2 * target_length, cap)) {
         tried_t tried = try_target(target_length);
 
-        // stop if the choice did not add a segment
+        // stop if no segment was added in the choice
         if (tried.length() == 0 || tried.length() == length_before) break;
         length_before = tried.length();
         const rlz_size_estimate_t estimate = tried.estimate;
@@ -203,7 +203,7 @@ void rlz_search_target_length(tried_t& best, tried_t* next_smaller, uint64_t fir
         has_before = true;
     }
 
-    // 2. if the first length yields the smallest rlz, halve the length while the rlz gets smaller
+    // 2. if the rlz with the first length is the smallest, halve the length while the rlz gets smaller
     if (search && best.target_length == first && best.length() != 0 && !rlz_reference_is_small(best.estimate)) {
         for (uint64_t target_length = first / 2; target_length >= min_length; target_length /= 2) {
             tried_t tried = try_target(target_length);

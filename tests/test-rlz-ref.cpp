@@ -444,7 +444,7 @@ static void verify_decode_continuation()
         };
 
         for (uint64_t q = 0; q < sequences_per_thread; q++) {
-            // the start position allows a report in both directions
+            // from the start position, a report in both directions is possible
             verified_decode_context walk(parsing, SA, uniform(2, n - 2), uniform(0, 1) == 1);
 
             for (uint64_t k = 0; k < operations_per_sequence; k++) {
@@ -630,7 +630,8 @@ TEST(test_rlz_ref, reference_matcher)
             for (bool wide : { false, true }) verify_reference_matcher(sigma, wide);
 }
 
-// checks that a revision drops the additions with the smallest gains if R would become longer than the given maximum
+// checks that in a revision, the additions with the smallest gains are dropped if R would become longer than the given
+// maximum
 TEST(test_rlz_ref, revision_respects_max_reference_length)
 {
     // the input consists of num_blocks blocks; R is one block in the middle; the ends of R are lengthened by up to
@@ -657,7 +658,7 @@ TEST(test_rlz_ref, revision_respects_max_reference_length)
     stats.began_with[max_lengthening - 1] = num_began;
     stats.z = num_ended + num_began;
 
-    // one byte per symbol of R; every phrase is worth about as much as the input divided by the number of phrases
+    // one byte per symbol of R; the estimated size of a phrase is about n / z bytes
     const rlz_size_estimate_t estimate { double(n + reference_length), double(reference_length), double(stats.z) };
     auto reference_symbol = [](uint64_t) { return uint64_t(0); };
     auto block_symbols = [](uint64_t, uint64_t, uint64_t) { return [](uint64_t) { return uint64_t(0); }; };
@@ -679,7 +680,7 @@ TEST(test_rlz_ref, revision_respects_max_reference_length)
     ASSERT_EQ(one.ref_segments.segments.front().beg, mid * block_length);
     ASSERT_LT(one.gain, both.gain);
 
-    // no room: R stays as it is
+    // no room: R is not changed
     const rlz_revised_reference none = revise(reference_length);
     ASSERT_EQ(none.ref_segments.length(), reference_length);
     ASSERT_FALSE(none.changes());

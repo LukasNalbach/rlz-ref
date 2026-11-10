@@ -167,7 +167,7 @@ rlz_revised_reference rlz_revision::revise(const rlz_reference_segments& ref_seg
     // a segment of the input added to R
     struct addition_t {
         rlz_segment_t segment;
-        double gain; // number of bytes it is expected to save
+        double gain; // expected reduction in bytes of the size of the rlz
         bool lengthens; // true <=> it lengthens an end of a segment of R, false <=> it is a block added to R
     };
 
@@ -176,7 +176,8 @@ rlz_revised_reference rlz_revision::revise(const rlz_reference_segments& ref_seg
     // 2. lengthen each end and start of a segment by the number of blocks with the largest expected gain
     for (uint64_t s = 0; s < ref_segments.segments.size(); s++) {
         for (const std::vector<uint32_t>* counted : { &stats.ended_with, &stats.began_with }) {
-            double num_saved = 0; // number of phrases saved by lengthening by e blocks
+            // number of phrases by which the parse becomes shorter if the end is lengthened by e blocks
+            double num_saved = 0;
             double best_gain = 0;
             uint64_t best_e = 0;
 
@@ -254,7 +255,8 @@ rlz_revised_reference rlz_revision::revise(const rlz_reference_segments& ref_seg
         // a group of blocks with common k-mers
         struct group_t {
             uint64_t founder; // the first block of the group (the one with the most phrases)
-            double saved;     // number of phrases in the parsed blocks that adding the founder to R saves
+            // number of phrases by which the parse of the parsed blocks becomes shorter if the founder is added to R
+            double saved;
         };
 
         std::vector<group_t> groups;

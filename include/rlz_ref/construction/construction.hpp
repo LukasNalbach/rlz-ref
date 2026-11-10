@@ -60,16 +60,16 @@ struct rlz_construction_params {
     // maximum number of threads to use during the construction (see rlz::construction::min_values_per_thread)
     uint64_t num_threads = omp_get_max_threads();
     rlz_space_t space = _in_memory; // whether the phrases are kept in memory or stored in temporary files
-    bool log = false; // controls whether to print log messages
+    bool log = false; // whether log messages are printed
     std::ostream* measurement_file = nullptr; // measurement file the durations of the construction phases are written to
     std::string measurement_key_suffix = ""; // suffix appended to each measurement key
     // file the temporary files are placed next to; empty <=> they are placed in the temporary directory
     std::string tmp_files_beside = "";
     // maximum length of R; 0 <=> chosen by the construction (see rlz::construction::tune_reference)
     uint64_t reference_target_length = 0;
-    // controls whether the length of R is tuned; if not, min(n / 3, 5.2 * r) is used
+    // whether the length of R is tuned; if not, min(n / 3, 5.2 * r) is used
     bool tune_reference_length = true;
-    // controls whether a tuned reference is revised (see rlz::construction::revise_reference)
+    // whether a tuned reference is revised (see rlz::construction::revise_reference)
     bool revise_reference = true;
 };
 
@@ -116,7 +116,7 @@ public:
  *    lengths of R are tried on a sample of SA^d (see tune_reference) and R is revised (see revise_reference)
  * 3. builds the suffix array of R (see rlz_reference_matcher)
  * 4. parses SA^d greedily into longest matches in R; each thread parses one range of SA^d; R can be revised
- *    by the parse and SA^d parsed again (see build_parsing)
+ *    with the statistics of the parse and SA^d parsed again (see build_parsing)
  * @tparam value_func_t type of the function returning SA^d[i]
  * @tparam intervals_t type of the disjoint interval sequence of Phi_inv: for i in [0..r-1], get<0>(i) returns the
  *         starting position p_i of the i-th input interval in ascending order (p_0 = 0) and get<1>(i) returns
@@ -166,14 +166,14 @@ protected:
     uint64_t r; // r, the number of runs in L
     uint64_t p; // the number of threads to use
     rlz_space_t space; // whether the phrases are kept in memory or stored in temporary files
-    bool log; // controls whether to print log messages
+    bool log; // whether log messages are printed
     std::ostream* measurement_file; // measurement file the durations of the phases are written to (or nullptr)
     std::string measurement_key_suffix; // suffix appended to each measurement key
     std::string tmp_files_beside; // file the temporary files are placed next to
     uint64_t given_reference_target_length; // maximum length of R given by the caller (0 if none)
-    bool tune_reference_length; // controls whether the length of R is tuned
-    bool revise_tuned_reference; // controls whether a tuned reference is revised
-    rlz_revision revision; // revises R (see revise_reference and build_parsing)
+    bool tune_reference_length; // whether the length of R is tuned
+    bool revise_tuned_reference; // whether a tuned reference is revised
+    rlz_revision revision; // the revision of R (see revise_reference and build_parsing)
 
     /* the ranges of SA^d parsed by the threads: [0..p] range_bounds[i_p] is the starting position of the range
        of thread i_p; range_bounds[p] = n; strictly increasing */
@@ -375,8 +375,8 @@ protected:
      * @brief revises the tuned reference in up to revision_params.sampled_rounds rounds
      *
      * In each round, a random sample of the blocks of SA^d is parsed with R (see parse_sample) and R is
-     * revised (see rlz_revision). The rounds end if a round is expected to save less than
-     * revision_params.min_gain of the size of the rlz.
+     * revised (see rlz_revision). The rounds end once the expected gain of a round (the number of bytes by which
+     * the rlz becomes smaller) is less than revision_params.min_gain times the estimated size of the rlz.
      */
     void revise_reference();
 
@@ -393,8 +393,8 @@ protected:
     void load_reference();
 
     /**
-     * @brief parses SA^d and builds the rlz from the phrases; if R is tuned and revised, R is revised by the
-     *        parse and SA^d is parsed again (at most revision_params.whole_rounds parses)
+     * @brief parses SA^d and builds the rlz from the phrases; if R is tuned and revised, R is revised with the
+     *        statistics of the parse and SA^d is parsed again (at most revision_params.whole_rounds parses)
      * @tparam space _on_disk <=> the phrases of each thread are stored in files
      */
     template <rlz_space_t space>

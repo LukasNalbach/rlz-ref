@@ -89,7 +89,7 @@ void rlz<kind>::construction<value_func_t, intervals_t>::build_value_frequencies
 
     value_frequency.reserve(r);
 
-    // the i-th pair of I_Phi_inv yields a value of SA^d and its number of occurrences in the i-th interval
+    // from the i-th pair of I_Phi_inv, a value of SA^d and its number of occurrences in the i-th interval are computed
     for (uint64_t i = 0; i < r; i++) {
         uint64_t value = (I_Phi_inv.template get<1>(i) + n) - I_Phi_inv.template get<0>(i);
         uint64_t occurrences = (i == r - 1 ? n : I_Phi_inv.template get<0>(i + 1)) - I_Phi_inv.template get<0>(i);
@@ -457,7 +457,7 @@ void rlz<kind>::construction<value_func_t, intervals_t>::revise_reference()
     for (uint64_t round = 0; round < revision_params.sampled_rounds; round++) {
         const rlz_parse_stats<uint16_t> stats = parse_sample(ref_segments, revision.draw_blocks());
         rlz_revised_reference revised = revise(ref_segments, stats);
-        // stop if the round is expected to save less than min_gain of the size of the rlz
+        // stop if the expected gain of the round is less than min_gain times the estimated size of the rlz
         const bool apply = revised.gain >= revision_params.min_gain * revised.estimated_bytes;
         log_message(log, rlz_revision::describe(reference_length, stats, revised, apply) + "\n");
         if (!apply) break;
@@ -580,7 +580,7 @@ void rlz<kind>::construction<value_func_t, intervals_t>::build_parsing()
         ref_segments.compute_begins();
     }
 
-    // 1. parse SA^d; if R is revised by the parse, SA^d is parsed again
+    // 1. parse SA^d; if R is revised with the statistics of the parse, SA^d is parsed again
     for (uint64_t round = 1;; round++) {
         source_width = std::bit_width(reference_length);
 
@@ -680,8 +680,8 @@ void rlz<kind>::construction<value_func_t, intervals_t>::build_parsing()
             if constexpr (space == _in_memory) PT_of_thread[thread].resize(num_written);
         }
 
-        // revise R by the parse and parse SA^d again, if the revision is expected to save at least
-        // min_gain of the size of the rlz
+        // revise R with the statistics of the parse and parse SA^d again, if the expected gain of the revision is at
+        // least min_gain times the estimated size of the rlz
         if (!collect_stats || round >= revision_params.whole_rounds) break;
 
         for (uint64_t thread = 0; thread < p; thread++) {

@@ -273,7 +273,7 @@ public:
  * @brief relative Lempel-Ziv (RLZ) encoding with random access of a differentially encoded integer sequence (e.g.,
  *        the differential suffix array SA^d), whose values are decoded sequentially with a decode_context_t
  *
- * R stores values SA^d[j] = SA[j] - SA[j-1] + n (the offset n makes the differences non-negative), value_width(n)
+ * R stores values SA^d[j] = SA[j] - SA[j-1] + n (with the offset n, the differences are non-negative), value_width(n)
  * bits each; PT has z + 2 entries (PT[z] = PT[z+1] = 0) with rank_1, select_0 and select_1 support; SR has z_c + 1
  * entries (SR[z_c] = |R|); LP stores the values of SA^d of the literal phrases (LP[0] = SA[0] + n), value_width(n)
  * bits each.

@@ -268,8 +268,8 @@ void rlz_reference_choice<scorer_t>::close_gaps()
         if (total_chosen_length + gap_length > target_length) continue;
         total_chosen_length += gap_length;
 
-        // the two segments are merged; update the scores of the gaps before and after them and remove a gap
-        // whose closing would exceed target_length
+        // the two segments are merged; update the scores of the gaps before and after them and remove a gap if
+        // the total length of the segments would exceed target_length after closing it
         if (left != chosen_by_beg.begin()) {
             segment_it_t outer = left;
             --outer;

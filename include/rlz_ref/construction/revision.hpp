@@ -47,8 +47,8 @@
 /**
  * @brief parameters for revising R (see rlz_revision)
  *
- * The input is divided into blocks of block_length symbols. A revision adds blocks of the input to R,
- * lengthens segments of R by blocks and removes blocks from R.
+ * The input is divided into blocks of block_length symbols. In a revision, blocks of the input are added to R,
+ * segments of R are lengthened by blocks and blocks are removed from R.
  */
 struct rlz_revision_params {
     uint64_t block_length = 4096; // length of a block
@@ -56,7 +56,7 @@ struct rlz_revision_params {
     uint64_t max_sampled_blocks = 32768; // maximum number of blocks that are parsed in a round on a sample
     uint64_t sampled_rounds = 2; // number of rounds on a sample, before the whole input is parsed
     uint64_t whole_rounds = 2; // maximum number of parses of the whole input
-    // minimum share of the size of the rlz that a round has to be expected to save for R to be revised
+    // minimum expected gain of a round, as a share of the estimated size of the rlz, for which R is revised
     double min_gain = 0.01;
     // minimum number of phrases starting in a block for the block to be considered for R
     uint64_t min_phrases_in_dense_block = 3;
@@ -74,7 +74,8 @@ struct rlz_revision_params {
 
 /**
  * @brief statistics on the phrases of a parse of the input (or of a sample of its blocks) with R; the counters
- *        ended_with, began_with and copied_from stop at the largest uint32_t (see rlz_revision::count)
+ *        ended_with, began_with and copied_from are not incremented beyond the largest uint32_t (see
+ *        rlz_revision::count)
  * @tparam phrase_count_t type of the number of phrases starting in a block
  */
 template <typename phrase_count_t>
@@ -110,7 +111,7 @@ struct rlz_revised_reference {
     uint64_t num_lengthened_ends = 0; // number of lengthened ends of segments
     uint64_t num_lengthening_blocks = 0; // total number of blocks the ends were lengthened by
     double estimated_bytes = 0; // estimated size in bytes of the rlz before the revision
-    double gain = 0; // number of bytes the added and lengthened segments are expected to save
+    double gain = 0; // expected reduction in bytes of the size of the rlz by the added and lengthened segments
 
     // returns whether blocks were added or segments lengthened
     bool changes() const { return num_added_blocks != 0 || num_lengthened_ends != 0; }
@@ -119,7 +120,7 @@ struct rlz_revised_reference {
 /**
  * @brief revises R using the statistics of a parse of the input with R
  *
- * The input is divided into blocks of block_length symbols. A revision (see revise)
+ * The input is divided into blocks of block_length symbols. revise()
  * 1. removes the blocks of R that no phrase copies from (only after a parse of the whole input that counted
  *    them, see rlz_parse_stats::copied_from),
  * 2. lengthens the segments of R at the ends at which phrases end (and at the starts at which phrases
@@ -129,7 +130,8 @@ struct rlz_revised_reference {
  *    half the average phrase length (between min_kmer_length and max_kmer_length),
  * 4. if R becomes longer than the largest supported |R|, drops the additions of 2. and 3. with the smallest
  *    expected gains until it fits.
- * The expected gain is the estimated size of the saved phrases minus the size of the added blocks.
+ * The expected gain is the estimated size of the phrases by which the parse becomes shorter minus the size of the
+ * added blocks.
  */
 class rlz_revision {
 public:
@@ -271,7 +273,7 @@ public:
     /**
      * @brief returns the log message describing a revision in two indented lines: |R|, z and the size, then the
      *        numbers of added blocks, of lengthened ends of segments and of blocks added at them, and the expected
-     *        saving, or that the revision is not applied (without a final line break)
+     *        gain, or that the revision is not applied (without a final line break)
      * @param reference_length |R| before the revision
      * @param stats statistics of the parse the revision is computed from
      * @param revised the revision
